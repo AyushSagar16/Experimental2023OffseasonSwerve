@@ -7,6 +7,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.geometry.Rotation2d;
 
@@ -93,6 +94,11 @@ public class SwerveModule {
 
         drive_motor_.set(drive_pid_controller_.calculate(getDriveVelocity(), desiredDrive));
         steer_motor_.set(steer_pid_controller_.calculate(getSteerPosition(), state.angle.getRadians()));
+    }
+
+    public void stop() {
+        drive_motor_.set(0);
+        steer_motor_.set(0);
     }
 
     // Constants Class
