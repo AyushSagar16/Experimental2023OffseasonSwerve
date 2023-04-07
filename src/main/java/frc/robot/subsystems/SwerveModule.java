@@ -58,6 +58,7 @@ public class SwerveModule {
         resetEncoders();
     }
 
+    // Methods
     public double getDrivePosition(){
         return drive_encoder_.getPosition();
     }

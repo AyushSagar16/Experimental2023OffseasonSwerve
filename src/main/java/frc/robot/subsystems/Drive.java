@@ -7,22 +7,22 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix.sensors.PigeonIMU_StatusFrame;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 
-public class Drive {
-
-    // gyro
+public class Drive extends SubsystemBase{
+    // Gyro
     private WPI_Pigeon2 gyro_;
     
-    // create instances for each Swerve Module
-    SwerveModule frontLeft_ = new SwerveModule(Constants.kFrontLeftDriveMotor, Constants.kFrontLeftSteerMotor, Constants.kFrontLeftCANCoder);
-    SwerveModule frontRight_ = new SwerveModule(Constants.kFrontRightDriveMotor, Constants.kFrontRightSteerMotor, Constants.kFrontRightCANCoder);
-    SwerveModule backLeft_ = new SwerveModule(Constants.kBackLeftDriveMotor, Constants.kBackLeftSteerMotor, Constants.kBackLeftCANCoder);
-    SwerveModule backRight_ = new SwerveModule(Constants.kBackRightDriveMotor, Constants.kBackRightSteerMotor, Constants.kBackRightCANCoder);
+    // Create instances for each Swerve Module
+    private final SwerveModule frontLeft_ = new SwerveModule(Constants.kFrontLeftDriveMotor, Constants.kFrontLeftSteerMotor, Constants.kFrontLeftCANCoder);
+    private final SwerveModule frontRight_ = new SwerveModule(Constants.kFrontRightDriveMotor, Constants.kFrontRightSteerMotor, Constants.kFrontRightCANCoder);
+    private final SwerveModule backLeft_ = new SwerveModule(Constants.kBackLeftDriveMotor, Constants.kBackLeftSteerMotor, Constants.kBackLeftCANCoder);
+    private final SwerveModule backRight_ = new SwerveModule(Constants.kBackRightDriveMotor, Constants.kBackRightSteerMotor, Constants.kBackRightCANCoder);
 
     
-    // all Translation2d(x,y) values need to be updated to the drivetrain
+    // All Translation2d(x,y) values need to be updated to the drivetrain
     // center to each swerve module (meters)
     Translation2d m_frontLeftLocation = new Translation2d(0.381, 0.381); 
     Translation2d m_frontRightLocation = new Translation2d(0.381, -0.381);
@@ -35,18 +35,25 @@ public class Drive {
         m_frontRightLocation, 
         m_backLeftLocation, 
         m_backRightLocation
-    );  
+    );
 
-    SwerveDriveOdometry odometer = new SwerveDriveOdometry(swerveKinematics_, getRotation2d(), null); // FIX NULL
+    // Check if this works
+    SwerveModulePosition[] modulePositions = new SwerveModulePosition[] {
+        new SwerveModulePosition(frontLeft_.getDrivePosition(), Rotation2d.fromDegrees(frontLeft_.getSteerPosition())),
+        new SwerveModulePosition(frontRight_.getDrivePosition(), Rotation2d.fromDegrees(frontRight_.getSteerPosition())),
+        new SwerveModulePosition(backLeft_.getDrivePosition(), Rotation2d.fromDegrees(backLeft_.getSteerPosition())),
+        new SwerveModulePosition(backRight_.getDrivePosition(), Rotation2d.fromDegrees(backRight_.getSteerPosition())),
+    };
 
-    // constructer
+    SwerveDriveOdometry odometer = new SwerveDriveOdometry(swerveKinematics_, getRotation2d(), modulePositions);
+
+    // Constructor
     public Drive() {
-        // Inititalize Gyro
+        // Initialize Gyro
         gyro_ = new WPI_Pigeon2(Constants.kGyroId);
         gyro_.setStatusFramePeriod(PigeonIMU_StatusFrame.CondStatus_9_SixDeg_YPR, 10);
 
-
-        // delays the zeroing of the gyro but allows other stuff to continue happening
+        // Delays the zeroing of the gyro but allows other stuff to continue happening
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
@@ -56,7 +63,7 @@ public class Drive {
         }).start();
     }
 
-    //methods
+    // Methods
     public void zeroHeading() {
         gyro_.reset();
     }
@@ -69,17 +76,19 @@ public class Drive {
         return Rotation2d.fromDegrees(getYaw());
     }
 
-    
     public Pose2d getPose() {
         return odometer.getPoseMeters();
     }
 
     public void resetOdometry(Pose2d pose) {
-        odometer.resetPosition(pose, null, getRotation2d()); // FIX NULL
+        odometer.resetPosition(getRotation2d(), modulePositions, pose);
+    }
+
+    public SwerveDriveKinematics getKinematics() {
+        return swerveKinematics_;
     }
     
-
-    // other odometry stuff -- fix the position stuff first
+    // Other odometry stuff -- fix the position stuff first
 
     public void stopModules() {
         frontLeft_.stop();
@@ -100,7 +109,6 @@ public class Drive {
         backLeft_.setDesiredState(desiredStates[2]);
         backRight_.setDesiredState(desiredStates[3]);
     }
-    
     
     // Constants Class
     public static class Constants {
@@ -129,5 +137,3 @@ public class Drive {
         public static final int kPhysicalMaxSpeedMetersPerSecond = 1;
     }
 }
-
-
