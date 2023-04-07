@@ -5,6 +5,9 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.DriveTeleop;
+import frc.robot.subsystems.Drive;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -13,12 +16,23 @@ import edu.wpi.first.wpilibj.TimedRobot;
  * project.
  */
 public class Robot extends TimedRobot {
+  // Subsystems
+  private final Drive drive_ = new Drive();
+
+  // Xbox controller
+  private final CommandXboxController controller_ = new CommandXboxController(0);
+
+  // Field Oriented
+  boolean fieldOriented_ = true;
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   @Override
-  public void robotInit() {}
+  public void robotInit() {
+    drive_.setDefaultCommand(new DriveTeleop(drive_, controller_, fieldOriented_));
+  }
 
   @Override
   public void robotPeriodic() {}
