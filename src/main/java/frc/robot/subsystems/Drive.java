@@ -87,6 +87,11 @@ public class Drive extends SubsystemBase{
     public SwerveDriveKinematics getKinematics() {
         return swerveKinematics_;
     }
+
+    @Override
+    public void periodic(){
+        odometer.update(getRotation2d(), modulePositions);
+    }
     
     // Other odometry stuff -- fix the position stuff first
 
