@@ -18,7 +18,7 @@ public class SwerveModule {
     // Sensors
     private final RelativeEncoder drive_encoder_;
     private final RelativeEncoder steer_encoder_;
-    private final CANCoder can_coder_;
+    private final CANCoder cancoder_;
 
     // Control
     private final PIDController drive_pid_controller_; // in m/s
@@ -39,13 +39,13 @@ public class SwerveModule {
         steer_encoder_.setPositionConversionFactor(2 * Math.PI * Constants.kSteerGearRatio);
         steer_encoder_.setVelocityConversionFactor(2 * Math.PI * Constants.kSteerGearRatio / 60);
         
-        can_coder_ = new CANCoder(kCanCoderID);
+        cancoder_ = new CANCoder(kCanCoderID);
         CANCoderConfiguration config = new CANCoderConfiguration();
         // set units of the CANCoder to radians, with velocity being radians per second
         config.sensorCoefficient = 2 * Math.PI / 4096.0;
         config.unitString = "rad";
         config.sensorTimeBase = SensorTimeBase.PerSecond;
-        can_coder_.configAllSettings(config);
+        cancoder_.configAllSettings(config);
 
         // Initialize PID controllers
         drive_pid_controller_ = new PIDController(Constants.kDriveKp, 0.0, 0.0);
@@ -55,6 +55,9 @@ public class SwerveModule {
 
         // Reset encoders
         resetEncoders();
+
+        // Reset CANCoder
+        cancoder_.configFactoryDefault();
     }
 
     // Methods
@@ -78,7 +81,7 @@ public class SwerveModule {
     }
 
     public double getCANCoderRad(){
-        return can_coder_.getAbsolutePosition();
+        return cancoder_.getAbsolutePosition();
     }
 
     public void resetEncoders(){
@@ -93,9 +96,9 @@ public class SwerveModule {
     public void setDesiredState(SwerveModuleState state){
         state = SwerveModuleState.optimize(state, getState().angle);
 
-        double desiredDrive = state.speedMetersPerSecond / Constants.kMaxSpeed;
+        // double desiredDrive = state.speedMetersPerSecond / Constants.kMaxSpeed;
 
-        drive_motor_.set(drive_pid_controller_.calculate(getDriveVelocity(), desiredDrive));
+        drive_motor_.set(drive_pid_controller_.calculate(getDriveVelocity(), state.speedMetersPerSecond));
         steer_motor_.set(steer_pid_controller_.calculate(getSteerPosition(), state.angle.getRadians()));
     }
 
@@ -110,12 +113,10 @@ public class SwerveModule {
         public static final double kDriveKp = 1.0;
         public static final double kSteerKp = 1.0;
 
-        // Hardware *Change after building is done*
-        public static double kDriveGearRatio = 10.18;
-        public static double kSteerGearRatio = 10.18;
-        public static double kWheelRadius = 0.0762;
+        // Hardware 
+        public static double kDriveGearRatio = 8.14;
+        public static double kSteerGearRatio = 150/7;
+        public static double kWheelRadius = 0.0762; // Update based on robot construction
 
-        // Limits
-        public static final double kMaxSpeed = 3.0; // m/s
     }
 }

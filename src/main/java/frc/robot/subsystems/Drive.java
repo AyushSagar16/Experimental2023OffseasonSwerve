@@ -22,39 +22,33 @@ public class Drive extends SubsystemBase{
     private AHRS gyro_; 
     
     // Create instances for each Swerve Module
-    private final SwerveModule frontLeft_ = new SwerveModule(
-        Constants.kFrontLeftDriveMotor, 
-        Constants.kFrontLeftSteerMotor, 
-        Constants.kFrontLeftCANCoder);
-    private final SwerveModule frontRight_ = new SwerveModule(
-        Constants.kFrontRightDriveMotor, 
-        Constants.kFrontRightSteerMotor, 
-        Constants.kFrontRightCANCoder);
-    private final SwerveModule backLeft_ = new SwerveModule(
-        Constants.kBackLeftDriveMotor, 
-        Constants.kBackLeftSteerMotor, 
-        Constants.kBackLeftCANCoder);
-    private final SwerveModule backRight_ = new SwerveModule(
-        Constants.kBackRightDriveMotor, 
-        Constants.kBackRightSteerMotor, 
-        Constants.kBackRightCANCoder);
+    private final SwerveModule front_left_ = new SwerveModule(
+        Module.FRONT_LEFT.drive_motor_id, 
+        Module.FRONT_LEFT.steer_motor_id, 
+        Module.FRONT_LEFT.cancoder_id);
+    private final SwerveModule front_right_ = new SwerveModule(
+        Module.FRONT_RIGHT.drive_motor_id, 
+        Module.FRONT_RIGHT.steer_motor_id, 
+        Module.FRONT_RIGHT.cancoder_id);
+    private final SwerveModule back_left_ = new SwerveModule(
+        Module.BACK_LEFT.drive_motor_id, 
+        Module.BACK_LEFT.steer_motor_id, 
+        Module.BACK_LEFT.cancoder_id);
+    private final SwerveModule back_right_ = new SwerveModule(
+        Module.BACK_RIGHT.drive_motor_id, 
+        Module.BACK_RIGHT.steer_motor_id, 
+        Module.BACK_RIGHT.cancoder_id);
 
-    // All Translation2d(x,y) values need to be updated to the drivetrain
-    // center to each swerve module (meters)
-    Translation2d m_frontLeftLocation = new Translation2d(0.381, 0.381); 
-    Translation2d m_frontRightLocation = new Translation2d(0.381, -0.381);
-    Translation2d m_backLeftLocation = new Translation2d(-0.381, 0.381);
-    Translation2d m_backRightLocation = new Translation2d(-0.381, -0.381);
 
-    // creating kinematics object
-    SwerveDriveKinematics swerveKinematics_ = new SwerveDriveKinematics(
-        m_frontLeftLocation, 
-        m_frontRightLocation, 
-        m_backLeftLocation, 
-        m_backRightLocation
+    // Creating Kinematics object
+    SwerveDriveKinematics kinematics_ = new SwerveDriveKinematics(
+        Constants.kFrontLeftLocation,
+        Constants.kFrontRightLocation,
+        Constants.kBackLeftLocation,
+        Constants.kBackRightLocation
     );
 
-    SwerveDriveOdometry odometer = new SwerveDriveOdometry(swerveKinematics_, getRotation2d(), getSwerveModulePositions());
+    SwerveDriveOdometry odometer = new SwerveDriveOdometry(kinematics_, getRotation2d(), getSwerveModulePositions());
 
     // Constructor
     public Drive() {
@@ -79,10 +73,10 @@ public class Drive extends SubsystemBase{
     // Methods
     public SwerveModulePosition[] getSwerveModulePositions(){
         return new SwerveModulePosition[] {
-            new SwerveModulePosition(frontLeft_.getDrivePosition(), new Rotation2d(frontLeft_.getSteerPosition())),
-            new SwerveModulePosition(frontRight_.getDrivePosition(), new Rotation2d(frontRight_.getSteerPosition())),
-            new SwerveModulePosition(backLeft_.getDrivePosition(), new Rotation2d(backLeft_.getSteerPosition())),
-            new SwerveModulePosition(backRight_.getDrivePosition(), new Rotation2d(backRight_.getSteerPosition())),
+            new SwerveModulePosition(front_left_.getDrivePosition(), new Rotation2d(front_left_.getSteerPosition())),
+            new SwerveModulePosition(front_right_.getDrivePosition(), new Rotation2d(front_right_.getSteerPosition())),
+            new SwerveModulePosition(back_left_.getDrivePosition(), new Rotation2d(back_left_.getSteerPosition())),
+            new SwerveModulePosition(back_right_.getDrivePosition(), new Rotation2d(back_right_.getSteerPosition())),
         };
     }
 
@@ -107,7 +101,7 @@ public class Drive extends SubsystemBase{
     }
 
     public SwerveDriveKinematics getKinematics() {
-        return swerveKinematics_;
+        return kinematics_;
     }
 
     @Override
@@ -118,49 +112,60 @@ public class Drive extends SubsystemBase{
     // Other odometry stuff -- fix the position stuff first
 
     public void stopModules() {
-        frontLeft_.stop();
-        frontRight_.stop();
-        backLeft_.stop();
-        backRight_.stop();
+        front_left_.stop();
+        front_right_.stop();
+        back_left_.stop();
+        back_right_.stop();
     }
 
     public void setModuleStates(SwerveModuleState[] desiredStates) {
-        /* 
-        incase any module is given a speed that is higher than the max, 
-        desaturateWheelSpeeds() will reduce all of the module speeds until all module speeds are under the limit 
-        */
+         
+        // Incase any module is given a speed that is higher than the max, 
+        // desaturateWheelSpeeds() will reduce all of the module speeds until all module speeds are under the limit
+        
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.kPhysicalMaxSpeedMetersPerSecond); 
 
-        frontLeft_.setDesiredState(desiredStates[0]);
-        frontRight_.setDesiredState(desiredStates[1]);
-        backLeft_.setDesiredState(desiredStates[2]);
-        backRight_.setDesiredState(desiredStates[3]);
+        front_left_.setDesiredState(desiredStates[0]);
+        front_right_.setDesiredState(desiredStates[1]);
+        back_left_.setDesiredState(desiredStates[2]);
+        back_right_.setDesiredState(desiredStates[3]);
     }
     
+    // Module IDs and CANCoder Offsets
+    public enum Module {
+        // * ADD VALUES ONCE DRIVETRAIN IS WIRED *
+        FRONT_LEFT(0, 0, 0, 0.0),
+        FRONT_RIGHT(0, 0, 0, 0.0),
+        BACK_LEFT(0, 0, 0, 0.0),
+        BACK_RIGHT(0, 0, 0, 0.0);
+
+        final int drive_motor_id;
+        final int steer_motor_id;
+        final int cancoder_id;
+        final double cancoder_offset;
+
+        Module(int drive_motor, int steer_motor, int cancoder, double offset) {
+            this.drive_motor_id = drive_motor;
+            this.steer_motor_id = steer_motor;
+            this.cancoder_id = cancoder;
+            this.cancoder_offset = offset;
+        }
+    }
+
     // Constants Class
     public static class Constants {
-        // Drive Motor IDs
-        public static final int kFrontLeftDriveMotor = 0;
-        public static final int kFrontRightDriveMotor = 0;
-        public static final int kBackLeftDriveMotor = 0;
-        public static final int kBackRightDriveMotor = 0;
-
-        // Steer Motor IDs
-        public static final int kFrontLeftSteerMotor = 0;
-        public static final int kFrontRightSteerMotor = 0;
-        public static final int kBackLeftSteerMotor = 0;
-        public static final int kBackRightSteerMotor = 0;
-
-        // CANCoder IDs
-        public static final int kFrontLeftCANCoder = 0;
-        public static final int kFrontRightCANCoder = 0;
-        public static final int kBackLeftCANCoder = 0;
-        public static final int kBackRightCANCoder = 0;
-
         // Gyro ID
         public static final int kGyroId = 0;
 
-        // Values :)
+        // Max Velocity?
         public static final int kPhysicalMaxSpeedMetersPerSecond = 1;
+
+        // All Translation2d(x,y) values need to be updated to the drivetrain
+        // center to each swerve module (meters)
+        public static final Translation2d kFrontLeftLocation = new Translation2d(0.381, 0.381); 
+        public static final Translation2d kFrontRightLocation = new Translation2d(0.381, -0.381);
+        public static final Translation2d kBackLeftLocation = new Translation2d(-0.381, 0.381);
+        public static final Translation2d kBackRightLocation = new Translation2d(-0.381, -0.381);
+
     }
 }
