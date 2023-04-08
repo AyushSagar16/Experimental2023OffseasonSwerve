@@ -8,12 +8,18 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import com.ctre.phoenix.sensors.PigeonIMU_StatusFrame;
-import com.ctre.phoenix.sensors.WPI_Pigeon2;
+import com.kauailabs.navx.frc.AHRS; 
+import edu.wpi.first.wpilibj.SPI;
+// import com.ctre.phoenix.sensors.PigeonIMU_StatusFrame;
+// import com.ctre.phoenix.sensors.WPI_Pigeon2;
 
 public class Drive extends SubsystemBase{
-    // Gyro
-    private WPI_Pigeon2 gyro_;
+    
+    // Pigeon 2.0 Gyro
+        // private WPI_Pigeon2 gyro_;
+
+    // navX Gyro
+    private AHRS gyro_; 
     
     // Create instances for each Swerve Module
     private final SwerveModule frontLeft_ = new SwerveModule(Constants.kFrontLeftDriveMotor, Constants.kFrontLeftSteerMotor, Constants.kFrontLeftCANCoder);
@@ -50,10 +56,14 @@ public class Drive extends SubsystemBase{
     // Constructor
     public Drive() {
         // Initialize Gyro
-        gyro_ = new WPI_Pigeon2(Constants.kGyroId);
-        gyro_.setStatusFramePeriod(PigeonIMU_StatusFrame.CondStatus_9_SixDeg_YPR, 10);
+        gyro_ = new AHRS(SPI.Port.kMXP);
 
-        // Delays the zeroing of the gyro but allows other stuff to continue happening
+        // Pigeon 2.0 Gyro
+            // gyro_ = new WPI_Pigeon2(Constants.kGyroId);
+            // gyro_.setStatusFramePeriod(PigeonIMU_StatusFrame.CondStatus_9_SixDeg_YPR, 10);
+
+        
+        // Thread delays the zeroing of the gyro but allows other stuff to continue happening
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
