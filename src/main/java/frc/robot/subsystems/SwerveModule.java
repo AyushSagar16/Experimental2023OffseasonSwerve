@@ -59,6 +59,8 @@ public class SwerveModule {
 
     // Methods
     public double getDrivePosition(){
+        // Need to set up the factor for the encoder later
+        // ((driveEncoder.getPosition() / ModuleConstants.kEncoderCPR) * ModuleConstants.kDriveEncoderRot2Meter)
         return drive_encoder_.getPosition();
     }
 
@@ -67,6 +69,7 @@ public class SwerveModule {
     }
 
     public double getDriveVelocity(){
+        // ((driveEncoder.getPosition() / ModuleConstants.kEncoderCPR) * ModuleConstants.kDriveEncoderRPM2MeterPerSec)
         return drive_encoder_.getVelocity();
     }
 

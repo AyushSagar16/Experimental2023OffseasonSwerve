@@ -22,12 +22,23 @@ public class Drive extends SubsystemBase{
     private AHRS gyro_; 
     
     // Create instances for each Swerve Module
-    private final SwerveModule frontLeft_ = new SwerveModule(Constants.kFrontLeftDriveMotor, Constants.kFrontLeftSteerMotor, Constants.kFrontLeftCANCoder);
-    private final SwerveModule frontRight_ = new SwerveModule(Constants.kFrontRightDriveMotor, Constants.kFrontRightSteerMotor, Constants.kFrontRightCANCoder);
-    private final SwerveModule backLeft_ = new SwerveModule(Constants.kBackLeftDriveMotor, Constants.kBackLeftSteerMotor, Constants.kBackLeftCANCoder);
-    private final SwerveModule backRight_ = new SwerveModule(Constants.kBackRightDriveMotor, Constants.kBackRightSteerMotor, Constants.kBackRightCANCoder);
+    private final SwerveModule frontLeft_ = new SwerveModule(
+        Constants.kFrontLeftDriveMotor, 
+        Constants.kFrontLeftSteerMotor, 
+        Constants.kFrontLeftCANCoder);
+    private final SwerveModule frontRight_ = new SwerveModule(
+        Constants.kFrontRightDriveMotor, 
+        Constants.kFrontRightSteerMotor, 
+        Constants.kFrontRightCANCoder);
+    private final SwerveModule backLeft_ = new SwerveModule(
+        Constants.kBackLeftDriveMotor, 
+        Constants.kBackLeftSteerMotor, 
+        Constants.kBackLeftCANCoder);
+    private final SwerveModule backRight_ = new SwerveModule(
+        Constants.kBackRightDriveMotor, 
+        Constants.kBackRightSteerMotor, 
+        Constants.kBackRightCANCoder);
 
-    
     // All Translation2d(x,y) values need to be updated to the drivetrain
     // center to each swerve module (meters)
     Translation2d m_frontLeftLocation = new Translation2d(0.381, 0.381); 
@@ -43,15 +54,7 @@ public class Drive extends SubsystemBase{
         m_backRightLocation
     );
 
-    // Check if this works
-    SwerveModulePosition[] modulePositions = new SwerveModulePosition[] {
-        new SwerveModulePosition(frontLeft_.getDrivePosition(), Rotation2d.fromDegrees(frontLeft_.getSteerPosition())),
-        new SwerveModulePosition(frontRight_.getDrivePosition(), Rotation2d.fromDegrees(frontRight_.getSteerPosition())),
-        new SwerveModulePosition(backLeft_.getDrivePosition(), Rotation2d.fromDegrees(backLeft_.getSteerPosition())),
-        new SwerveModulePosition(backRight_.getDrivePosition(), Rotation2d.fromDegrees(backRight_.getSteerPosition())),
-    };
-
-    SwerveDriveOdometry odometer = new SwerveDriveOdometry(swerveKinematics_, getRotation2d(), modulePositions);
+    SwerveDriveOdometry odometer = new SwerveDriveOdometry(swerveKinematics_, getRotation2d(), getSwerveModulePositions());
 
     // Constructor
     public Drive() {
@@ -74,6 +77,15 @@ public class Drive extends SubsystemBase{
     }
 
     // Methods
+    public SwerveModulePosition[] getSwerveModulePositions(){
+        return new SwerveModulePosition[] {
+            new SwerveModulePosition(frontLeft_.getDrivePosition(), new Rotation2d(frontLeft_.getSteerPosition())),
+            new SwerveModulePosition(frontRight_.getDrivePosition(), new Rotation2d(frontRight_.getSteerPosition())),
+            new SwerveModulePosition(backLeft_.getDrivePosition(), new Rotation2d(backLeft_.getSteerPosition())),
+            new SwerveModulePosition(backRight_.getDrivePosition(), new Rotation2d(backRight_.getSteerPosition())),
+        };
+    }
+
     public void zeroHeading() {
         gyro_.reset();
     }
@@ -91,7 +103,7 @@ public class Drive extends SubsystemBase{
     }
 
     public void resetOdometry(Pose2d pose) {
-        odometer.resetPosition(getRotation2d(), modulePositions, pose);
+        odometer.resetPosition(getRotation2d(), getSwerveModulePositions(), pose);
     }
 
     public SwerveDriveKinematics getKinematics() {
@@ -100,7 +112,7 @@ public class Drive extends SubsystemBase{
 
     @Override
     public void periodic(){
-        odometer.update(getRotation2d(), modulePositions);
+        odometer.update(getRotation2d(), getSwerveModulePositions());
     }
     
     // Other odometry stuff -- fix the position stuff first
