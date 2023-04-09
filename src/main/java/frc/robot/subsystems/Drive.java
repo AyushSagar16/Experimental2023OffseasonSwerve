@@ -48,7 +48,7 @@ public class Drive extends SubsystemBase{
         Constants.kBackRightLocation
     );
 
-    SwerveDriveOdometry odometer = new SwerveDriveOdometry(kinematics_, getRotation2d(), getSwerveModulePositions());
+    SwerveDriveOdometry odometer_ = new SwerveDriveOdometry(kinematics_, getRotation2d(), getSwerveModulePositions());
 
     // Constructor
     public Drive() {
@@ -73,10 +73,10 @@ public class Drive extends SubsystemBase{
     // Methods
     public SwerveModulePosition[] getSwerveModulePositions(){
         return new SwerveModulePosition[] {
-            new SwerveModulePosition(front_left_.getDrivePosition(), new Rotation2d(front_left_.getSteerPosition())),
-            new SwerveModulePosition(front_right_.getDrivePosition(), new Rotation2d(front_right_.getSteerPosition())),
-            new SwerveModulePosition(back_left_.getDrivePosition(), new Rotation2d(back_left_.getSteerPosition())),
-            new SwerveModulePosition(back_right_.getDrivePosition(), new Rotation2d(back_right_.getSteerPosition())),
+            front_left_.getModulePosition(),
+            front_right_.getModulePosition(),
+            back_left_.getModulePosition(),
+            back_right_.getModulePosition()
         };
     }
 
@@ -85,7 +85,7 @@ public class Drive extends SubsystemBase{
     }
 
     public double getYaw() {
-        return Math.toRadians(gyro_.getYaw());
+        return Math.toRadians(gyro_.getYaw()); // returns degrees
     }
 
     public Rotation2d getRotation2d() {
@@ -93,11 +93,11 @@ public class Drive extends SubsystemBase{
     }
 
     public Pose2d getPose() {
-        return odometer.getPoseMeters();
+        return odometer_.getPoseMeters();
     }
 
     public void resetOdometry(Pose2d pose) {
-        odometer.resetPosition(getRotation2d(), getSwerveModulePositions(), pose);
+        odometer_.resetPosition(getRotation2d(), getSwerveModulePositions(), pose);
     }
 
     public SwerveDriveKinematics getKinematics() {
@@ -106,11 +106,9 @@ public class Drive extends SubsystemBase{
 
     @Override
     public void periodic(){
-        odometer.update(getRotation2d(), getSwerveModulePositions());
+        odometer_.update(getRotation2d(), getSwerveModulePositions());
     }
     
-    // Other odometry stuff -- fix the position stuff first
-
     public void stopModules() {
         front_left_.stop();
         front_right_.stop();
@@ -119,10 +117,8 @@ public class Drive extends SubsystemBase{
     }
 
     public void setModuleStates(SwerveModuleState[] desiredStates) {
-         
         // Incase any module is given a speed that is higher than the max, 
-        // desaturateWheelSpeeds() will reduce all of the module speeds until all module speeds are under the limit
-        
+        // desaturateWheelSpeeds() will reduce all of the module speeds until all module speeds are under the limit 
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.kPhysicalMaxSpeedMetersPerSecond); 
 
         front_left_.setDesiredState(desiredStates[0]);
@@ -160,8 +156,7 @@ public class Drive extends SubsystemBase{
         // Max Velocity?
         public static final int kPhysicalMaxSpeedMetersPerSecond = 1;
 
-        // All Translation2d(x,y) values need to be updated to the drivetrain
-        // center to each swerve module (meters)
+        // * UPDATE BASED ON DRIVETRAIN CONSTRUCTION *
         public static final Translation2d kFrontLeftLocation = new Translation2d(0.381, 0.381); 
         public static final Translation2d kFrontRightLocation = new Translation2d(0.381, -0.381);
         public static final Translation2d kBackLeftLocation = new Translation2d(-0.381, 0.381);

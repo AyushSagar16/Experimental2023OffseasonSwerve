@@ -7,6 +7,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.geometry.Rotation2d;
 
@@ -61,6 +62,9 @@ public class SwerveModule {
     }
 
     // Methods
+
+    // getDrivePosition() and getSteerPosition() return rotations right now
+
     public double getDrivePosition(){
         // Need to set up the factor for the encoder later
         // ((driveEncoder.getPosition() / ModuleConstants.kEncoderCPR) * ModuleConstants.kDriveEncoderRot2Meter)
@@ -69,6 +73,10 @@ public class SwerveModule {
 
     public double getSteerPosition(){
         return steer_encoder_.getPosition();
+    }
+
+    public SwerveModulePosition getModulePosition() {
+        return new SwerveModulePosition(getDrivePosition(), new Rotation2d(getSteerPosition()));
     }
 
     public double getDriveVelocity(){
