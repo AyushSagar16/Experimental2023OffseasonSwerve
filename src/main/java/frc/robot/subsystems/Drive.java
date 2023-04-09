@@ -76,7 +76,7 @@ public class Drive extends SubsystemBase{
             front_left_.getModulePosition(),
             front_right_.getModulePosition(),
             back_left_.getModulePosition(),
-            back_right_.getModulePosition()
+            back_right_.getModulePosition(),
         };
     }
 
